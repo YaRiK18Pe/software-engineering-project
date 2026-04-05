@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Список користувачів</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+</head>
+<body>
+  <h2>Список користувачів</h2>
+
+  <form name="userForm">
+    <input type="hidden" name="id" value="0" />
+
+    <div class="form-group">
+      <label for="surname">Прізвище:</label>
+      <input class="form-control" name="surname" required />
+    </div>
+
+    <div class="form-group">
+      <label for="name">Ім’я:</label>
+      <input class="form-control" name="name" required />
+    </div>
+
+    <div class="form-group">
+      <label for="fathername">По батькові:</label>
+      <input class="form-control" name="fathername" required />
+    </div>
+
+    <div class="form-group">
+      <label for="age">Вік:</label>
+      <input class="form-control" name="age" type="number" required />
+    </div>
+
+    <div class="panel-body">
+      <button type="submit" class="btn btn-primary">Зберегти</button>
+      <button type="button" id="reset" class="btn btn-default">Скинути</button>
+    </div>
+  </form>
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Прізвище</th>
+        <th>Ім’я</th>
+        <th>По батькові</th>
+        <th>Вік</th>
+        <th>Дії</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Отримання всіх користувачів
+    async function getUsers() {
+      const response = await fetch("/api/users");
+      if (response.ok) {
+        const users = await response.json();
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = "";
+        users.forEach(user => tbody.appendChild(createRow(user)));
+      }
+    }
+
+    // Отримати одного користувача
+    async function getUser(id) {
+      const response = await fetch(`/api/users/${id}`);
+      if (response.ok) {
+        const user = await response.json();
+        const form = document.forms["userForm"];
+
+        form.elements["id"].value = user._id;
+        form.elements["surname"].value = user.surname;
+        form.elements["name"].value = user.name;
+        form.elements["fathername"].value = user.fathername;
+        form.elements["age"].value = user.age;
+      }
+    }
+
+    // Додати користувача
+    async function createUser(surname, name, fathername, age) {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          surname,
+          name,
+          fathername,
+          age: parseInt(age)
+        })
+      });
+
+      if (response.ok) {
+        await getUsers();
+        resetForm();
+      }
+    }
+
+    // Оновити користувача
+    async function updateUser(id, surname, name, fathername, age) {
+      const response = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          surname,
+          name,
+          fathername,
+          age: parseInt(age)
+        })
+      });
+
+      if (response.ok) {
+        await getUsers();
+        resetForm();
+      }
+    }
+
+    // Видалити користувача
+    async function deleteUser(id) {
+      const response = await fetch(`/api/users/${id}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        await getUsers();
+      }
+    }
+
+    // Скинути форму
+    function resetForm() {
+      const form = document.forms["userForm"];
+      form.elements["id"].value = "0";
+      form.elements["surname"].value = "";
+      form.elements["name"].value = "";
+      form.elements["fathername"].value = "";
+      form.elements["age"].value = "";
+    }
+
+    // Створити рядок таблиці
+    function createRow(user) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${user._id}</td>
+        <td>${user.surname}</td>
+        <td>${user.name}</td>
+        <td>${user.fathername}</td>
+        <td>${user.age}</td>
+        <td>
+          <button class="btn btn-sm btn-info" onclick="getUser('${user._id}')">Редагувати</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser('${user._id}')">Видалити</button>
+        </td>`;
+      return tr;
+    }
+
+    // Обробка події форми
+    document.forms["userForm"].addEventListener("submit", e => {
+      e.preventDefault();
+      const form = e.target;
+
+      const id = form.elements["id"].value;
+      const surname = form.elements["surname"].value;
+      const name = form.elements["name"].value;
+      const fathername = form.elements["fathername"].value;
+      const age = form.elements["age"].value;
+
+      if (id === "0" || id === "")
+        createUser(surname, name, fathername, age);
+      else
+        updateUser(id, surname, name, fathername, age);
+    });
+
+    document.getElementById("reset").addEventListener("click", resetForm);
+
+    getUsers();
+  </script>
+</body>
+</html>

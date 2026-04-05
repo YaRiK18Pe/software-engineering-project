@@ -1,0 +1,38 @@
+version: "3.8"
+
+volumes:
+  mongo_db_data:
+
+services:
+  # MongoDB
+  my_mongodb:
+    image: mongo:latest
+    container_name: mongoapp-mongodb
+    volumes:
+      - mongo_db_data:/data/db
+    ports:
+      - "27017:27017"
+
+  # Node.js додаток
+  app:
+    build: .
+    container_name: mongoapp-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_DB_HOSTNAME=my_mongodb
+      - MONGO_DB_PORT=27017
+      - MONGO_DB=usersdb
+    depends_on:
+      - my_mongodb
+
+  # k6 для тестування
+  k6:
+    image: grafana/k6
+    container_name: mongoapp-k6
+    volumes:
+      - D:/SELab/lab3/mongoapp/k6:/scripts  
+    environment:
+      - BASE_URL=http://app:3000
+    depends_on:
+      - app
