@@ -26,12 +26,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd  D:\SELab\lab3\mongoapp
+          cd lab3/mongoapp
           npm install
       
       - name: Run Lint
         run: |
-          cd  D:\SELab\lab3\mongoapp
+          cd lab3/mongoapp
           npm run lint || true   # щоб не падало
 
   # 2. BUILD AND PUSH
