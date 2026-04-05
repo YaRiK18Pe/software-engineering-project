@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "lint": "eslint ."
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -12,7 +13,9 @@
     "mongoose": "^8.0.0"
   },
   "description": "",
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^10.2.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC"
